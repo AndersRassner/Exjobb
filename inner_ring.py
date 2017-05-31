@@ -25,10 +25,10 @@ def check_if_inner(text, weight): # weight is a float, text is a line like <edge
     #if x > 4406 AND x < 5904 AND y > 8271 AND y < 9717:
 
 inputfile = open('link_big4_edges.txt')
-outputfile = open('link_big4_inner_edges.txt', 'w')
-weight = 1.5 #weight traveltime 50% higher
+outputfile = open('link_big4_inner_edges.xml', 'w')
+weight = 2
 
-outputfile.writelines("<meandata>\n  <interval begin=\"0\" end=\"3600\" id=\"whatever\">\n")
+outputfile.writelines("<meandata>\n  <interval begin=\"0\" end=\"10000\" id=\"whatever\">\n")
 
 #for i in inputfile.next()
 for line in inputfile:

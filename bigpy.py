@@ -11,6 +11,7 @@ def main():
         sys.exit("please declare environment variable 'SUMO_HOME'")
 
     # pylint: disable=too-many-lines,maybe-no-member,c0103
+    
 
     BlockTM = False
     RealTime = False

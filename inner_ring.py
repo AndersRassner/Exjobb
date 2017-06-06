@@ -4,14 +4,21 @@
 # ugly regexes.
 #
 # Anders Rassner
-# 
+#
 import sys, os, re
 
-def check_if_inner(text, weight): # weight is a float, text is a line like <edge id=":100038_7" shape="4702.04,8269.45 4706.38,11178.50" length="11.44" speed="11.11"/>
-    edge_id = re.findall(r"<edge.+(?= shape)",text) 
-    shape = re.findall(r"[-+shape\=]?\d*\.\d+|[-+shape\=]\d+",text)
-    length = re.findall(r"(?<=length\=\")+\d*\.\d+",text)
-    speed = re.findall(r"(?<=speed\=\")+\d*\.\d+",text)
+# pylint: disable=c0103
+
+def check_if_inner(text, weight):
+    """
+    weight is a float
+    text is a line like <edge id=":100038_7" shape="4702.04,8269.45 4706.38,11178.50" length="11.44" speed="11.11"/>
+    """
+    # These ugly regexes extract the needed variables from the line passed to this function
+    edge_id = re.findall(r"<edge.+(?= shape)", text)
+    shape = re.findall(r"[-+shape\=]?\d*\.\d+|[-+shape\=]\d+", text)
+    length = re.findall(r"(?<=length\=\")+\d*\.\d+", text)
+    speed = re.findall(r"(?<=speed\=\")+\d*\.\d+", text)
     x = float(shape[0])
     y = float(shape[1])
     traveltime = float(length[0])/float(speed[0])
@@ -19,23 +26,21 @@ def check_if_inner(text, weight): # weight is a float, text is a line like <edge
         result = "    " + edge_id[0] + " traveltime=\"" + str(weight*traveltime) + "\"/>"
     else:
         result = ""
-    
     return result
-    
     #if x > 4406 AND x < 5904 AND y > 8271 AND y < 9717:
 
 inputfile = open('link_big4_edges.txt')
 outputfile = open('link_big4_inner_edges.xml', 'w')
-weight = 2
+weightMain = 2
 
 outputfile.writelines("<meandata>\n  <interval begin=\"0\" end=\"10000\" id=\"whatever\">\n")
 
 #for i in inputfile.next()
 for line in inputfile:
-    result = check_if_inner(line,weight)
-    if result != "":
+    resultMain = check_if_inner(line, weightMain)
+    if resultMain != "":
         #print result
-        outputfile.writelines(result + "\n")
+        outputfile.writelines(resultMain + "\n")
 
 outputfile.writelines("  </interval>\n</meandata>")
 inputfile.close()

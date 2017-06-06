@@ -12,7 +12,7 @@ def main():
 
     # pylint: disable=too-many-lines,maybe-no-member,c0103
     
-
+    # variable declarations
     BlockTM = False
     RealTime = False
     Now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -27,6 +27,7 @@ def main():
     SumName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_"
     LogName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_"
 
+    # simulation selection
     simulationToRun = raw_input("Which simulation type? 1=noTM, 2=weighted and 3=blockchain: ")
     if simulationToRun == '1':
         ChosenTM = NOTM
@@ -54,6 +55,7 @@ def main():
         sumocommand = [SUMOBING, "-c", ChosenTM, "--summary", SumName, "--duration-log.statistics"
                        , "--verbose", "--log", LogName]
 
+    # simulation starts
     import traci
     print sumocommand
     traci.start(sumocommand)
@@ -78,6 +80,7 @@ def main():
                 sleep(50.0 / 1000.0)
             t_end2 += 1.0
             t_now = time()
+    # Old testcode from simplepy.py
     #   e3Sub = traci.multientryexit.getSubscriptionResults()
     #   curInnerCount = e3Sub["e3Detector_0"][16]
 
@@ -101,7 +104,7 @@ def main():
 
     #for val in e3Sub["e3Detector_0"]:
     #    print val
-    print "ended big.py"
+    print "ended bigpy.py"
     print Step
     traci.close()
     sys.exit(0)

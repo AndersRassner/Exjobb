@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import datetime
 from time import sleep, time
 
@@ -42,6 +43,16 @@ def main():
         BlockTM = True
         LogName = LogName + "block_tm.log"
         SumName = SumName + "block_tm_sum.xml"
+        filename = "link_big4_inner_edges_block.xml"
+        edges = {}
+        cars = {}
+        inputfile = open(filename)
+        for line in inputfile:
+            edge_id = re.findall(r"(?<=edge id\=\").+(?=\" trave)", line)
+            traveltime = re.findall(r"(?<=traveltime\=\").+(?=\"/>)", line)
+            if edge_id:
+                edges[edge_id[0]] = traveltime[0]
+        inputfile.close()
     else:
         sys.exit(-1)
 
@@ -73,8 +84,17 @@ def main():
         Step += 1
 
         if BlockTM:
-            Step = Step
-            # Do blockchain stuff
+            for carID in traci.simulation.getDepartedIDList():
+                if carID in cars:
+                    cars[carID] += 1
+                else:
+                    cars[carID] = 1
+                for edge in traci.vehicle.getRoute(carID):
+                    if edge in edges:
+                        traci.vehicle.rerouteTraveltime(carID, False)
+                        break
+                        #print "rerouted. "
+            #if Step % 100 == 0:
 
         if RealTime:
             while time() < t_end2:
@@ -105,9 +125,15 @@ def main():
 
     #for val in e3Sub["e3Detector_0"]:
     #    print val
-    print "ended bigpy.py"
-    print Step
+    print "ended bigpy.py at step " + str(Step)
+    #print Step
     traci.close()
+
+    # DEBUG
+    for key in cars:
+        if cars[key] > 1:
+            print key + str(cars[key])
+    # DEBUG END
     sys.exit(0)
 
     print "Never print"

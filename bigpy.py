@@ -92,47 +92,23 @@ def main():
                 for edge in traci.vehicle.getRoute(carID):
                     if edge in edges:
                         traci.vehicle.rerouteTraveltime(carID, False)
+                        # BUY PASSAGE
                         break
-                        #print "rerouted. "
-            #if Step % 100 == 0:
 
         if RealTime:
+            print "Step " + str(Step) + ": [Insert debug text]"
             while time() < t_end2:
                 sleep(50.0 / 1000.0)
             t_end2 += 1.0
             t_now = time()
-    # Old testcode from simplepy.py
-    #   e3Sub = traci.multientryexit.getSubscriptionResults()
-    #   curInnerCount = e3Sub["e3Detector_0"][16]
 
-        # DEBUG/TINKERING OUTPUTS
-        #if e3Sub["e3Detector_0"][16] != 0:
-            #print e3Sub["e3Detector_0"]
-            #print traci.multientryexit.getLastStepVehicleIDs("e3Detector_0")
-            #print traci.vehicle.getIDList()
-
-        # MAX 10 VEHICLES ON INNER ROAD!
-    #   if curInnerCount > 9:
-    #       for vehicle in traci.vehicle.getIDList():
-    #           if vehicle not in traci.multientryexit.getLastStepVehicleIDs("e3Detector_0"):
-                    # Change route
-    #                traci.vehicle.rerouteTraveltime(vehicle)
-                    # print "Changed route somehow"
-
-    #    if StepSim:
-    #        if raw_input("Keep stepping through simulation y/n?") == 'n':
-    #            StepSim = False
-
-    #for val in e3Sub["e3Detector_0"]:
-    #    print val
     print "ended bigpy.py at step " + str(Step)
     #print Step
     traci.close()
 
     # DEBUG
-    for key in cars:
-        if cars[key] > 1:
-            print key + str(cars[key])
+    #for key in cars:
+    #    print key + " rerouted " + str(cars[key]) + " times."
     # DEBUG END
     sys.exit(0)
 

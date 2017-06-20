@@ -73,8 +73,9 @@ def main():
         Step += 1
 
         if BlockTM:
+            Step = Step
             # Do blockchain stuff
-        
+
         if RealTime:
             while time() < t_end2:
                 sleep(50.0 / 1000.0)

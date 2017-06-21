@@ -14,6 +14,7 @@ def main():
     # pylint: disable=too-many-lines,maybe-no-member,c0103
     
     # variable declarations
+    Weight = 1.00
     BlockTM = False
     RealTime = False
     Now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -51,7 +52,7 @@ def main():
             edge_id = re.findall(r"(?<=edge id\=\").+(?=\" trave)", line)
             traveltime = re.findall(r"(?<=traveltime\=\").+(?=\"/>)", line)
             if edge_id:
-                edges[edge_id[0]] = traveltime[0]
+                edges[edge_id[0]] = float(traveltime[0])
         inputfile.close()
     else:
         sys.exit(-1)
@@ -84,15 +85,25 @@ def main():
         Step += 1
 
         if BlockTM:
+            # Average real-life time to clear inner ring is 8-16 minutes
+            # depending on time of day and traffic.
+            # Crudely simulated before smart contract by following line
+            if Step%60 == 0 and Weight > 0.99:
+                Weight -= 0.1
             for carID in traci.simulation.getDepartedIDList():
-                if carID in cars:
-                    cars[carID] += 1
-                else:
-                    cars[carID] = 1
+                #if carID in cars:
+                ##    cars[carID] += 1
+                #else:
+                #    cars[carID] = 1
+                traci.vehicle.rerouteTraveltime(carID, False)
                 for edge in traci.vehicle.getRoute(carID):
                     if edge in edges:
                         traci.vehicle.rerouteTraveltime(carID, False)
                         # BUY PASSAGE
+                        # RECALCULATE EDGE TIMES
+                        Weight += 0.01
+                        for edge2, traveltime in edges.iteritems():
+                            traci.edge.adaptTraveltime(edge2, (traveltime * Weight))
                         break
 
         if RealTime:
@@ -101,6 +112,8 @@ def main():
                 sleep(50.0 / 1000.0)
             t_end2 += 1.0
             t_now = time()
+        elif Step%100 == 0:
+            print "Step " + str(Step) + ": Weight is currently " + str(Weight)
 
     print "ended bigpy.py at step " + str(Step)
     #print Step

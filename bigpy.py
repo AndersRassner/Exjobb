@@ -23,11 +23,13 @@ def main():
     SUMOBING = "C:\\Sumo\\bin\\sumo-gui.exe"
 
     ChosenTM = ""
-    NOTM = "C:\\Users\\Anders\\Sumo\\big.sumocfg"
-    WEIGHTTM = "C:\\Users\\Anders\\Sumo\\big_weighted.sumocfg"
-    BLOCKCHAINTM = "C:\\Users\\Anders\\Sumo\\big_blockchain.sumocfg"
-    SumName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_"
-    LogName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_"
+    # Valid values are 960, 1600 and 2800
+    CARAMOUNT = "2800"
+    NOTM = "C:\\Users\\Anders\\Sumo\\big_" + CARAMOUNT + ".sumocfg"
+    WEIGHTTM = "C:\\Users\\Anders\\Sumo\\big_weighted_" + CARAMOUNT + ".sumocfg"
+    BLOCKCHAINTM = "C:\\Users\\Anders\\Sumo\\big_blockchain_" + CARAMOUNT + ".sumocfg"
+    SumName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + "_"
+    LogName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + "_"
 
     # simulation selection
     simulationToRun = raw_input("Which simulation type? 1=noTM, 2=weighted and 3=blockchain: ")
@@ -111,7 +113,7 @@ def main():
                 sleep(50.0 / 1000.0)
             t_end2 += 1.0
             t_now = time()
-        elif Step%100 == 0:
+        elif Step%100 == 0 and BlockTM:
             print "Step " + str(Step) + ": Weight is currently " + str(Weight)
 
     print "ended bigpy.py at step " + str(Step)

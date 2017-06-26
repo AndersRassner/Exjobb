@@ -94,6 +94,8 @@ def main():
                 Weight -= 0.1
                 if Weight < 1.00:
                     Weight = 1.00
+                elif Weight > 2.00:
+                    Weight = 2.00
             for carID in traci.simulation.getDepartedIDList():
                 #cars.append(int(carID))
                 traci.vehicle.rerouteTraveltime(carID, False)

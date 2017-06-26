@@ -4,7 +4,13 @@ import re
 import datetime
 from time import sleep, time
 
-def main():
+def main(simtorun_, realtime_, caramount_="960"):
+    """Runs a simulation using sumo and config files.
+    
+    Args:
+        simtorun_ -- 1, 2 or 3 which corresponds to no-, weighted- or block-TM
+        realtime_ -- 1 or 2 where 1 means don't run in realtime and 2 means run in realtime
+    """
     if 'SUMO_HOME' in os.environ:
         tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
         sys.path.append(tools)
@@ -12,7 +18,6 @@ def main():
         sys.exit("please declare environment variable 'SUMO_HOME'")
 
     # pylint: disable=too-many-lines,maybe-no-member,c0103
-    
     # variable declarations
     Weight = 1.00
     BlockTM = False
@@ -24,7 +29,7 @@ def main():
 
     ChosenTM = ""
     # Valid values are 960, 1600 and 2800
-    CARAMOUNT = "2800"
+    CARAMOUNT = caramount_
     NOTM = "C:\\Users\\Anders\\Sumo\\big_" + CARAMOUNT + ".sumocfg"
     WEIGHTTM = "C:\\Users\\Anders\\Sumo\\big_weighted_" + CARAMOUNT + ".sumocfg"
     BLOCKCHAINTM = "C:\\Users\\Anders\\Sumo\\big_blockchain_" + CARAMOUNT + ".sumocfg"
@@ -32,7 +37,8 @@ def main():
     LogName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + "_"
 
     # simulation selection
-    simulationToRun = raw_input("Which simulation type? 1=noTM, 2=weighted and 3=blockchain: ")
+    #simulationToRun = raw_input("Which simulation type? 1=noTM, 2=weighted and 3=blockchain: ")
+    simulationToRun = simtorun_
     if simulationToRun == '1':
         ChosenTM = NOTM
         LogName = LogName + "no_tm.log"
@@ -59,15 +65,17 @@ def main():
     else:
         sys.exit(-1)
 
-    if raw_input("Run in real time y/n? ") == 'y':
+    #if raw_input("Run in real time y/n? ") == 'y':
+    if realtime_ == '2':
         RealTime = True
-
-    if raw_input("Run simulation in GUI y/n? ") == 'n':
-        sumocommand = [SUMOBIN, "-c", ChosenTM, "--summary", SumName, "--duration-log.statistics"
-                       , "--verbose", "--log", LogName]
-    else:
-        sumocommand = [SUMOBING, "-c", ChosenTM, "--summary", SumName, "--duration-log.statistics"
-                       , "--verbose", "--log", LogName]
+    sumocommand = [SUMOBIN, "-c", ChosenTM, "--summary", SumName, "--duration-log.statistics"
+                   , "--verbose", "--log", LogName]
+    #if raw_input("Run simulation in GUI y/n? ") == 'n':
+    #    sumocommand = [SUMOBIN, "-c", ChosenTM, "--summary", SumName, "--duration-log.statistics"
+    #                   , "--verbose", "--log", LogName]
+    #else:
+    #    sumocommand = [SUMOBING, "-c", ChosenTM, "--summary", SumName, "--duration-log.statistics"
+    #                   , "--verbose", "--log", LogName]
 
     # simulation starts
     import traci
@@ -126,10 +134,12 @@ def main():
     # DEBUG END
     #print Step
     traci.close()
-
-    sys.exit(0)
-
-    print "Never print"
+    return
 
 if __name__ == '__main__':
-    main()
+    print __name__
+    if len(sys.argv) != 3:
+        print "Please call this program with 2 arguments"
+        sys.exit(-1)
+    main(sys.argv[1], sys.argv[2], '1600')
+    sys.exit(0)

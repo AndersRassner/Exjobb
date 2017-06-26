@@ -46,7 +46,7 @@ def main():
         SumName = SumName + "block_tm_sum.xml"
         filename = "link_big4_inner_edges_block.xml"
         edges = {}
-        cars = {}
+        cars = []
         inputfile = open(filename)
         for line in inputfile:
             edge_id = re.findall(r"(?<=edge id\=\").+(?=\" trave)", line)
@@ -90,11 +90,10 @@ def main():
             # Crudely simulated before smart contract by following line
             if Step%60 == 0 and Weight > 0.99:
                 Weight -= 0.1
+                if Weight < 1.00:
+                    Weight = 1.00
             for carID in traci.simulation.getDepartedIDList():
-                #if carID in cars:
-                ##    cars[carID] += 1
-                #else:
-                #    cars[carID] = 1
+                #cars.append(int(carID))
                 traci.vehicle.rerouteTraveltime(carID, False)
                 for edge in traci.vehicle.getRoute(carID):
                     if edge in edges:
@@ -116,13 +115,14 @@ def main():
             print "Step " + str(Step) + ": Weight is currently " + str(Weight)
 
     print "ended bigpy.py at step " + str(Step)
+    # DEBUG
+    #print cars
+    #print "Highest carID: " + str(max(cars))
+    #print "Lowest carID: " + str(min(cars))
+    # DEBUG END
     #print Step
     traci.close()
 
-    # DEBUG
-    #for key in cars:
-    #    print key + " rerouted " + str(cars[key]) + " times."
-    # DEBUG END
     sys.exit(0)
 
     print "Never print"

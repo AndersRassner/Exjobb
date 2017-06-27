@@ -7,11 +7,11 @@ def main():
     """
     # pylint: disable=too-many-lines,maybe-no-member,c0103
     started = datetime.now()
-    bigpy.main('1', '1', '960')
+    bigpy.main('1', '1', '800')
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('2', '1', '960')
+    bigpy.main('2', '1', '800')
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('3', '1', '960')
+    bigpy.main('3', '1', '800')
     print "\n[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('1', '1', '1600')
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
@@ -19,11 +19,11 @@ def main():
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('3', '1', '1600')
     print "\n[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('1', '1', '2800')
+    bigpy.main('1', '1', '2400')
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('2', '1', '2800')
+    bigpy.main('2', '1', '2400')
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('3', '1', '2800')
+    bigpy.main('3', '1', '2400')
     print "\n[INFO]    Final runtime: " + str((datetime.now() - started)) + "\n"
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import re
 import datetime
 from time import sleep, time
 
-def main(simtorun_, realtime_, caramount_="960"):
+def main(simtorun_, realtime_, caramount_="800"):
     """Runs a simulation using sumo and config files.
     
     Args:
@@ -28,7 +28,7 @@ def main(simtorun_, realtime_, caramount_="960"):
     SUMOBING = "C:\\Sumo\\bin\\sumo-gui.exe"
 
     ChosenTM = ""
-    # Valid values are 960, 1600 and 2800
+    # Valid values are 800, 960, 1600, 2400 and 2800
     CARAMOUNT = caramount_
     NOTM = "C:\\Users\\Anders\\Sumo\\big_" + CARAMOUNT + ".sumocfg"
     WEIGHTTM = "C:\\Users\\Anders\\Sumo\\big_weighted_" + CARAMOUNT + ".sumocfg"
@@ -97,13 +97,13 @@ def main(simtorun_, realtime_, caramount_="960"):
         if BlockTM:
             # Average real-life time to clear inner ring is 8-16 minutes
             # depending on time of day and traffic.
-            # Crudely simulated before smart contract by following line
+            # Crudely simulated before smart contract by following lines
             if Step%60 == 0 and Weight > 0.99:
                 Weight -= 0.1
-                if Weight < 1.00:
-                    Weight = 1.00
-                elif Weight > 2.00:
-                    Weight = 2.00
+            if Weight < 1.00:
+                Weight = 1.00
+            elif Weight > 2.00:
+                Weight = 2.00
             for carID in traci.simulation.getDepartedIDList():
                 #cars.append(int(carID))
                 traci.vehicle.rerouteTraveltime(carID, False)

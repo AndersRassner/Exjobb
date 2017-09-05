@@ -20,6 +20,17 @@ def main(simtorun_, realtime_, caramount_="800"):
     # pylint: disable=too-many-lines,maybe-no-member,c0103
     # variable declarations
     Weight = 1.00
+    CarsOnInner = 0
+    
+    edges = {}
+    filename = "link_big4_inner_edges_block.xml"
+    inputfile = open(filename)
+    for line in inputfile:
+        edge_id = re.findall(r"(?<=edge id\=\").+(?=\" trave)", line)
+        traveltime = re.findall(r"(?<=traveltime\=\").+(?=\"/>)", line)
+        if edge_id:
+            edges[edge_id[0]] = float(traveltime[0])
+    inputfile.close()
     BlockTM = False
     RealTime = False
     Now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -28,13 +39,15 @@ def main(simtorun_, realtime_, caramount_="800"):
     SUMOBING = "C:\\Sumo\\bin\\sumo-gui.exe"
 
     ChosenTM = ""
-    # Valid values are 800, 960, 1600, 2400 and 2800
+    # Valid values are 800, 960, 1000, 1200, 1400, 1600, 2400 and 2800
     CARAMOUNT = caramount_
     NOTM = "C:\\Users\\Anders\\Sumo\\big_" + CARAMOUNT + ".sumocfg"
     WEIGHTTM = "C:\\Users\\Anders\\Sumo\\big_weighted_" + CARAMOUNT + ".sumocfg"
     BLOCKCHAINTM = "C:\\Users\\Anders\\Sumo\\big_blockchain_" + CARAMOUNT + ".sumocfg"
     SumName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + "_"
     LogName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + "_"
+    RatioName = "C:\\Users\\Anders\\Sumo\\logs\\ratio.log"
+    RatioString = ""
 
     # simulation selection
     #simulationToRun = raw_input("Which simulation type? 1=noTM, 2=weighted and 3=blockchain: ")
@@ -43,25 +56,20 @@ def main(simtorun_, realtime_, caramount_="800"):
         ChosenTM = NOTM
         LogName = LogName + "no_tm.log"
         SumName = SumName + "no_tm_sum.xml"
+        RatioString = "noTM - "
     elif simulationToRun == '2':
         ChosenTM = WEIGHTTM
         LogName = LogName + "weight_tm.log"
         SumName = SumName + "weight_tm_sum.xml"
+        RatioString = "weightedTM - "
     elif simulationToRun == '3':
         ChosenTM = BLOCKCHAINTM
         BlockTM = True
         LogName = LogName + "block_tm.log"
         SumName = SumName + "block_tm_sum.xml"
-        filename = "link_big4_inner_edges_block.xml"
-        edges = {}
+        RatioString = "blockchainTM - "
         cars = []
-        inputfile = open(filename)
-        for line in inputfile:
-            edge_id = re.findall(r"(?<=edge id\=\").+(?=\" trave)", line)
-            traveltime = re.findall(r"(?<=traveltime\=\").+(?=\"/>)", line)
-            if edge_id:
-                edges[edge_id[0]] = float(traveltime[0])
-        inputfile.close()
+
     else:
         sys.exit(-1)
 
@@ -117,6 +125,13 @@ def main(simtorun_, realtime_, caramount_="800"):
                             traci.edge.adaptTraveltime(edge2, (traveltime * Weight))
                         break
 
+        # Keep track of ratio on inner ring
+        for carID in traci.simulation.getDepartedIDList():
+            for edge in traci.vehicle.getRoute(carID):
+                if edge in edges:
+                    CarsOnInner += 1
+                    break
+
         if RealTime:
             print "Step " + str(Step) + ": [Insert debug text]"
             while time() < t_end2:
@@ -134,6 +149,12 @@ def main(simtorun_, realtime_, caramount_="800"):
     # DEBUG END
     #print Step
     traci.close()
+    with open(RatioName, "a") as ratiofile:
+        ratiofile.write("\n" + RatioString + Now)
+        ratiofile.write("\nTotal Cars: " + str(CARAMOUNT))
+        ratiofile.write("\nInner Cars: " + str(CarsOnInner))
+        ratiofile.write("\nRatio:      " + str(float(CarsOnInner)/float(CARAMOUNT)) + "\n")
+    print "Wrote Ratio to " + RatioName
     return
 
 if __name__ == '__main__':
@@ -141,5 +162,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print "Please call this program with 2 arguments"
         sys.exit(-1)
-    main(sys.argv[1], sys.argv[2], '1600')
+    main(sys.argv[1], sys.argv[2], '1000')
     sys.exit(0)

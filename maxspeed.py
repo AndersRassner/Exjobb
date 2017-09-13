@@ -3,7 +3,7 @@ import bigpy
 
 def main():
     """
-    Runs all simulations including the simulated blockchain ones
+    Runs all simulations including the real blockchain ones
     """
     # pylint: disable=too-many-lines,maybe-no-member,c0103
     LOWESTTRAFFIC = '800'
@@ -15,25 +15,25 @@ def main():
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('2', '1', LOWESTTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('3', '1', LOWESTTRAFFIC)
+    bigpy.main('3', '2', LOWESTTRAFFIC)
     print "\n[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('1', '1', LOWTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('2', '1', LOWTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('3', '1', LOWTRAFFIC)
+    bigpy.main('3', '2', LOWTRAFFIC)
     print "\n[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('1', '1', MEDIUMTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('2', '1', MEDIUMTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('3', '1', MEDIUMTRAFFIC)
+    bigpy.main('3', '2', MEDIUMTRAFFIC)
     print "\n[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('1', '1', HIGHTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('2', '1', HIGHTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
-    bigpy.main('3', '1', HIGHTRAFFIC)
+    bigpy.main('3', '2', HIGHTRAFFIC)
     print "\n[INFO]    Final runtime: " + str((datetime.now() - started)) + "\n"
 
 if __name__ == '__main__':

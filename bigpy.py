@@ -3,13 +3,16 @@ import sys
 import re
 import datetime
 from time import sleep, time
+from web3 import Web3, KeepAliveRPCProvider, IPCProvider
+# TODO: replace float() castings to the more future safe from __future__ import divison
 
 def main(simtorun_, realtime_, caramount_="800"):
     """Runs a simulation using sumo and config files.
-    
+
     Args:
         simtorun_ -- 1, 2 or 3 which corresponds to no-, weighted- or block-TM
         realtime_ -- 1 or 2 where 1 means don't run in realtime and 2 means run in realtime
+        caramount_ -- 800, 960, 1000, 1200, 1400, 1600, 2400 or 2800
     """
     if 'SUMO_HOME' in os.environ:
         tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -21,7 +24,7 @@ def main(simtorun_, realtime_, caramount_="800"):
     # variable declarations
     Weight = 1.00
     CarsOnInner = 0
-    
+
     edges = {}
     filename = "link_big4_inner_edges_block.xml"
     inputfile = open(filename)
@@ -46,6 +49,7 @@ def main(simtorun_, realtime_, caramount_="800"):
     BLOCKCHAINTM = "C:\\Users\\Anders\\Sumo\\big_blockchain_" + CARAMOUNT + ".sumocfg"
     SumName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + "_"
     LogName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + "_"
+    BlockLogName = "C:\\Users\\Anders\\Sumo\\logs\\" + Now + "big_" + CARAMOUNT + ".log"
     RatioName = "C:\\Users\\Anders\\Sumo\\logs\\ratio.log"
     RatioString = ""
 
@@ -69,6 +73,22 @@ def main(simtorun_, realtime_, caramount_="800"):
         SumName = SumName + "block_tm_sum.xml"
         RatioString = "blockchainTM - "
         cars = []
+        web3 = Web3(KeepAliveRPCProvider(host='localhost', port='8545'))
+        MyContract = web3.eth.contract([{"constant":True,"inputs":[],"name":"maxTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"priceRatio","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"zeroCurrentTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"getMaxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"currentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newMaxTraffic","type":"uint256"}],"name":"setMaxTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"timeSinceLoweredTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"buyPassage","outputs":[],"payable":True,"stateMutability":"payable","type":"function"},{"constant":True,"inputs":[],"name":"maxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"getCurrentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":False,"inputs":[{"name":"newMaxPrice","type":"uint256"}],"name":"setMaxPrice","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"currentTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"inputs":[{"name":"initMaxTraffic","type":"uint256"},{"name":"initMaxPrice","type":"uint256"}],"payable":False,"stateMutability":"nonpayable","type":"constructor"}]
+        )
+        MyContract.address = '0x942cd0a5ed863c6dc84a13c57abc3aa74111306e'
+        BlockLogString = "Contract Address: " + MyContract.address + "\n"
+        # Unlock first 3 accounts if not unlocked.    
+        web3.personal.unlockAccount(web3.personal.listAccounts[0], 'traffic', 10000)
+        web3.personal.unlockAccount(web3.personal.listAccounts[1], 'traffic', 10000)
+        web3.personal.unlockAccount(web3.personal.listAccounts[2], 'traffic', 10000)
+        MyContract.call().zeroCurrentTraffic()
+        cur_price = MyContract.call().getCurrentPrice()
+        cur_traffic = MyContract.call().currentTraffic()
+        # Max Price/Traffic assumed constant, otherwise should be added to simulation loop
+        max_traffic = MyContract.call().maxTraffic()
+        #cur_max = MyContract.call().getMaxPrice()
+
 
     else:
         sys.exit(-1)
@@ -103,9 +123,32 @@ def main(simtorun_, realtime_, caramount_="800"):
         Step += 1
 
         if BlockTM:
+
+            for carID in traci.simulation.getDepartedIDList():
+                #cars.append(int(carID))
+                traci.vehicle.rerouteTraveltime(carID, False)
+                for edge in traci.vehicle.getRoute(carID):
+                    if edge in edges:
+                        # Why reroute again?
+                        # traci.vehicle.rerouteTraveltime(carID, False)
+                        
+                        # BUY PASSAGE
+                        cur_price = MyContract.call().getCurrentPrice()
+                        estimatedGas = web3.eth.estimateGas({'to': MyContract.address, 'from': web3.eth.accounts[1], 'value': cur_price})
+                        try:
+                            transaction_ = MyContract.transact({'from': web3.eth.accounts[1], 'value': estimatedGas+cur_price}).buyPassage()
+                        except ValueError:
+                            BlockLogString += "\n\n****\nValueError\n****\n\n"
+                        cur_traffic = MyContract.call().currentTraffic()
+                        Weight = 1 + (cur_traffic / float(max_traffic))
+
+                        # RECALCULATE EDGE TIMES
+                        for edge2, traveltime in edges.iteritems():
+                            traci.edge.adaptTraveltime(edge2, (traveltime * Weight))
+                        break
+            """ Crudely simulated before smart contract by following lines
             # Average real-life time to clear inner ring is 8-16 minutes
             # depending on time of day and traffic.
-            # Crudely simulated before smart contract by following lines
             if Step%60 == 0 and Weight > 0.99:
                 Weight -= 0.1
             if Weight < 1.00:
@@ -124,6 +167,7 @@ def main(simtorun_, realtime_, caramount_="800"):
                         for edge2, traveltime in edges.iteritems():
                             traci.edge.adaptTraveltime(edge2, (traveltime * Weight))
                         break
+            """
 
         # Keep track of ratio on inner ring
         for carID in traci.simulation.getDepartedIDList():
@@ -133,7 +177,14 @@ def main(simtorun_, realtime_, caramount_="800"):
                     break
 
         if RealTime:
-            print "Step " + str(Step) + ": [Insert debug text]"
+            RealTimeString = "Step " + str(Step) + ": Cars on inner = " + str(CarsOnInner)
+            RealTimeString += "\n     : cur_traffic   = " + str(cur_traffic)
+            RealTimeString += "\n     : cur_price     = " + str(cur_price)
+            RealTimeString += "\n     : Weight        = " + str(Weight)
+            print RealTimeString
+            
+            BlockLogString += RealTimeString
+            
             while time() < t_end2:
                 sleep(50.0 / 1000.0)
             t_end2 += 1.0
@@ -155,6 +206,9 @@ def main(simtorun_, realtime_, caramount_="800"):
         ratiofile.write("\nInner Cars: " + str(CarsOnInner))
         ratiofile.write("\nRatio:      " + str(float(CarsOnInner)/float(CARAMOUNT)) + "\n")
     print "Wrote Ratio to " + RatioName
+    with open(BlockLogName, "a") as blocklogfile:
+        blocklogfile.write("\n\n" + BlockLogString + Now + "\n")
+    print "Wrote BlockChainLog to " + BlockLogName
     return
 
 if __name__ == '__main__':
@@ -162,5 +216,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print "Please call this program with 2 arguments"
         sys.exit(-1)
-    main(sys.argv[1], sys.argv[2], '1000')
+    main(sys.argv[1], sys.argv[2], '800')
     sys.exit(0)

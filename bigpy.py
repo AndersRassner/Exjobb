@@ -74,9 +74,10 @@ def main(simtorun_, realtime_, caramount_="800"):
         RatioString = "blockchainTM - "
         cars = []
         web3 = Web3(KeepAliveRPCProvider(host='localhost', port='8545'))
-        MyContract = web3.eth.contract([{"constant":True,"inputs":[],"name":"maxTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"priceRatio","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"zeroCurrentTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"getMaxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"currentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newMaxTraffic","type":"uint256"}],"name":"setMaxTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"timeSinceLoweredTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"buyPassage","outputs":[],"payable":True,"stateMutability":"payable","type":"function"},{"constant":True,"inputs":[],"name":"maxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"getCurrentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":False,"inputs":[{"name":"newMaxPrice","type":"uint256"}],"name":"setMaxPrice","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"currentTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"inputs":[{"name":"initMaxTraffic","type":"uint256"},{"name":"initMaxPrice","type":"uint256"}],"payable":False,"stateMutability":"nonpayable","type":"constructor"}]
+        MyContract = web3.eth.contract([{"constant":True,"inputs":[],"name":"maxTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"priceRatio","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"zeroCurrentTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":False,"inputs":[],"name":"withdrawBalance","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"getMaxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"currentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newMaxTraffic","type":"uint256"}],"name":"setMaxTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"timeSinceLoweredTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"buyPassage","outputs":[],"payable":True,"stateMutability":"payable","type":"function"},{"constant":True,"inputs":[],"name":"maxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"getCurrentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":False,"inputs":[{"name":"newMaxPrice","type":"uint256"}],"name":"setMaxPrice","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"currentTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"inputs":[{"name":"initMaxTraffic","type":"uint256"},{"name":"initMaxPrice","type":"uint256"}],"payable":False,"stateMutability":"nonpayable","type":"constructor"}]
         )
-        MyContract.address = '0x942cd0a5ed863c6dc84a13c57abc3aa74111306e'
+        MyContract.address = '0x422cda8d40141c667034ba3529609a105a2107ed'
+
         BlockLogString = "Contract Address: " + MyContract.address + "\n"
         # Unlock first 3 accounts if not unlocked.    
         web3.personal.unlockAccount(web3.personal.listAccounts[0], 'traffic', 10000)
@@ -134,11 +135,12 @@ def main(simtorun_, realtime_, caramount_="800"):
                         
                         # BUY PASSAGE
                         cur_price = MyContract.call().getCurrentPrice()
-                        estimatedGas = web3.eth.estimateGas({'to': MyContract.address, 'from': web3.eth.accounts[1], 'value': cur_price})
+                        estimatedGas = 2*(web3.eth.estimateGas({'to': MyContract.address, 'from': web3.eth.accounts[1], 'value': cur_price}))
                         try:
                             transaction_ = MyContract.transact({'from': web3.eth.accounts[1], 'value': estimatedGas+cur_price}).buyPassage()
                         except ValueError:
                             BlockLogString += "\n\n****\nValueError\n****\n\n"
+                            print "\n\n****\nValueError\n****\n\n"
                         cur_traffic = MyContract.call().currentTraffic()
                         Weight = 1 + (cur_traffic / float(max_traffic))
 
@@ -177,10 +179,11 @@ def main(simtorun_, realtime_, caramount_="800"):
                     break
 
         if RealTime:
-            RealTimeString = "Step " + str(Step) + ": Cars on inner = " + str(CarsOnInner)
-            RealTimeString += "\n     : cur_traffic   = " + str(cur_traffic)
-            RealTimeString += "\n     : cur_price     = " + str(cur_price)
-            RealTimeString += "\n     : Weight        = " + str(Weight)
+            RealTimeString = "Step " + str(Step)
+            RealTimeString += "\ncur_traffic   = " + str(cur_traffic)
+            RealTimeString += "\ncur_price     = " + str(cur_price)
+            RealTimeString += "\nWeight        = " + str(Weight)
+            RealTimeString += "\n"
             print RealTimeString
             
             BlockLogString += RealTimeString

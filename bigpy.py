@@ -209,7 +209,7 @@ def main(simtorun_, realtime_, caramount_="800"):
         ratiofile.write("\nInner Cars: " + str(CarsOnInner))
         ratiofile.write("\nRatio:      " + str(float(CarsOnInner)/float(CARAMOUNT)) + "\n")
     print "Wrote Ratio to " + RatioName
-    with open(BlockLogName, "a") as blocklogfile:
+    with open(BlockLogName, "w") as blocklogfile:
         blocklogfile.write("\n\n" + BlockLogString + Now + "\n")
     print "Wrote BlockChainLog to " + BlockLogName
     return

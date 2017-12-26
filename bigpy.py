@@ -6,13 +6,13 @@ from time import sleep, time
 from web3 import Web3, KeepAliveRPCProvider, IPCProvider
 # TODO: replace float() castings to the more future safe from __future__ import divison
 
-def main(simtorun_, realtime_, caramount_="800"):
+def main(simtorun_, realtime_, caramount_="400"):
     """Runs a simulation using sumo and config files.
 
     Args:
         simtorun_ -- 1, 2 or 3 which corresponds to no-, weighted- or block-TM
         realtime_ -- 1 or 2 where 1 means don't run in realtime and 2 means run in realtime
-        caramount_ -- 800, 960, 1000, 1200, 1400, 1600, 2400 or 2800
+        caramount_ -- 400, 600, 800, 960, 1000, 1200, 1400, 1600, 2400 or 2800
     """
     if 'SUMO_HOME' in os.environ:
         tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
@@ -42,7 +42,7 @@ def main(simtorun_, realtime_, caramount_="800"):
     SUMOBING = "C:\\Sumo\\bin\\sumo-gui.exe"
 
     ChosenTM = ""
-    # Valid values are 800, 960, 1000, 1200, 1400, 1600, 2400 and 2800
+    # Valid values are 400, 600, 800, 960, 1000, 1200, 1400, 1600, 2400 and 2800
     CARAMOUNT = caramount_
     NOTM = "C:\\Users\\Anders\\Sumo\\big_" + CARAMOUNT + ".sumocfg"
     WEIGHTTM = "C:\\Users\\Anders\\Sumo\\big_weighted_" + CARAMOUNT + ".sumocfg"
@@ -209,9 +209,10 @@ def main(simtorun_, realtime_, caramount_="800"):
         ratiofile.write("\nInner Cars: " + str(CarsOnInner))
         ratiofile.write("\nRatio:      " + str(float(CarsOnInner)/float(CARAMOUNT)) + "\n")
     print "Wrote Ratio to " + RatioName
-    with open(BlockLogName, "w") as blocklogfile:
-        blocklogfile.write("\n\n" + BlockLogString + Now + "\n")
-    print "Wrote BlockChainLog to " + BlockLogName
+    if(BlockTM):
+        with open(BlockLogName, "w") as blocklogfile:
+            blocklogfile.write("\n\n" + BlockLogString + Now + "\n")
+        print "Wrote BlockChainLog to " + BlockLogName
     return
 
 if __name__ == '__main__':
@@ -219,5 +220,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print "Please call this program with 2 arguments"
         sys.exit(-1)
-    main(sys.argv[1], sys.argv[2], '800')
+    main(sys.argv[1], sys.argv[2], '400')
     sys.exit(0)

@@ -6,11 +6,25 @@ def main():
     Runs all simulations including the real blockchain ones
     """
     # pylint: disable=too-many-lines,maybe-no-member,c0103
+    MINIMUMTRAFFIC = '400'
+    EVENLOWESTTRAFFIC = '600'
     LOWESTTRAFFIC = '800'
     LOWTRAFFIC = '1000'
     MEDIUMTRAFFIC = '1200'
     HIGHTRAFFIC = '1400'
     started = datetime.now()
+    bigpy.main('1', '1', MINIMUMTRAFFIC)
+    print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
+    bigpy.main('2', '1', MINIMUMTRAFFIC)
+    print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
+    bigpy.main('3', '2', MINIMUMTRAFFIC)
+    print "\n[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
+    bigpy.main('1', '1', EVENLOWESTTRAFFIC)
+    print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
+    bigpy.main('2', '1', EVENLOWESTTRAFFIC)
+    print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
+    bigpy.main('3', '2', EVENLOWESTTRAFFIC)
+    print "\n[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('1', '1', LOWESTTRAFFIC)
     print "[INFO]    Current runtime: " + str((datetime.now() - started)) + "\n"
     bigpy.main('2', '1', LOWESTTRAFFIC)

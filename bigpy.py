@@ -73,7 +73,7 @@ def main(simtorun_, realtime_, caramount_="400"):
         SumName = SumName + "block_tm_sum.xml"
         RatioString = "blockchainTM - "
         cars = []
-        web3 = Web3(KeepAliveRPCProvider(host='localhost', port='8545'))
+        web3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545", request_kwargs={'timeout': 60}))
         MyContract = web3.eth.contract([{"constant":True,"inputs":[],"name":"maxTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"priceRatio","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"zeroCurrentTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":False,"inputs":[],"name":"withdrawBalance","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"getMaxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"currentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newMaxTraffic","type":"uint256"}],"name":"setMaxTraffic","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"timeSinceLoweredTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[],"name":"buyPassage","outputs":[],"payable":True,"stateMutability":"payable","type":"function"},{"constant":True,"inputs":[],"name":"maxPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":True,"inputs":[],"name":"getCurrentPrice","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"constant":False,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":False,"inputs":[{"name":"newMaxPrice","type":"uint256"}],"name":"setMaxPrice","outputs":[],"payable":False,"stateMutability":"nonpayable","type":"function"},{"constant":True,"inputs":[],"name":"currentTraffic","outputs":[{"name":"","type":"uint256"}],"payable":False,"stateMutability":"view","type":"function"},{"inputs":[{"name":"initMaxTraffic","type":"uint256"},{"name":"initMaxPrice","type":"uint256"}],"payable":False,"stateMutability":"nonpayable","type":"constructor"}]
         )
         MyContract.address = '0xa6da455b1d90d4d2e7f463e5e7a91a101416a4eb'
@@ -135,12 +135,22 @@ def main(simtorun_, realtime_, caramount_="400"):
                         
                         # BUY PASSAGE
                         cur_price = MyContract.call().getCurrentPrice()
-                        estimatedGas = 2*(web3.eth.estimateGas({'to': MyContract.address, 'from': web3.eth.accounts[1], 'value': cur_price}))
                         try:
-                            transaction_ = MyContract.transact({'from': web3.eth.accounts[1], 'value': estimatedGas+cur_price}).buyPassage()
-                        except ValueError:
-                            BlockLogString += "\n\n****\nValueError\n****\n\n"
-                            print "\n\n****\nValueError\n****\n\n"
+                            estimatedGas = 2*(web3.eth.estimateGas({'to': MyContract.address, 'from': web3.eth.accounts[1], 'value': cur_price}))
+                            curGasLimit = web3.eth.getBlock("latest").get("gasLimit", 400000)
+                        except ReadTimeout as e:
+                            estimatedGas = 300000
+                            print "\nTimeout Error\n"
+                        #print str(estimatedGas) + " <--est gas, limit--> " + str(curGasLimit)
+                        if estimatedGas >= curGasLimit:
+                            estimatedGas = (curGasLimit/10)*8
+                        try:
+                            # transaction_ = MyContract.transact({'from': web3.eth.accounts[1], 'value': estimatedGas+cur_price}).buyPassage()
+                            #print str(estimatedGas) + " <--est gas, limit--> " + str(curGasLimit)
+                            transaction_ = MyContract.transact({'from': web3.eth.accounts[1], 'gas': estimatedGas, 'value': cur_price}).buyPassage()
+                        except ValueError as e:
+                            BlockLogString += "\n\n****\nValueError\n****\n" + str(e) + "\n\n"
+                            print "\n\n****\nValueError\n****\n" + str(e) + "\n\n"
                         cur_traffic = MyContract.call().currentTraffic()
                         Weight = 1 + (cur_traffic / float(max_traffic))
 
@@ -220,5 +230,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print "Please call this program with 2 arguments"
         sys.exit(-1)
-    main(sys.argv[1], sys.argv[2], '400')
+    main(sys.argv[1], sys.argv[2], '800')
     sys.exit(0)

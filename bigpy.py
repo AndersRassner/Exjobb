@@ -83,7 +83,9 @@ def main(simtorun_, realtime_, caramount_="400"):
         web3.personal.unlockAccount(web3.personal.listAccounts[0], 'traffic', 10000)
         web3.personal.unlockAccount(web3.personal.listAccounts[1], 'traffic', 10000)
         web3.personal.unlockAccount(web3.personal.listAccounts[2], 'traffic', 10000)
-        MyContract.call().zeroCurrentTraffic()
+        MyContract.transact({'from': web3.eth.accounts[0], 'gas': 100000}).zeroCurrentTraffic()
+        print "Sleeping for 90 seconds while cur_traffic zeroes"
+        sleep(90)
         cur_price = MyContract.call().getCurrentPrice()
         cur_traffic = MyContract.call().currentTraffic()
         # Max Price/Traffic assumed constant, otherwise should be added to simulation loop
@@ -138,9 +140,10 @@ def main(simtorun_, realtime_, caramount_="400"):
                         try:
                             estimatedGas = 2*(web3.eth.estimateGas({'to': MyContract.address, 'from': web3.eth.accounts[1], 'value': cur_price}))
                             curGasLimit = web3.eth.getBlock("latest").get("gasLimit", 400000)
-                        except ReadTimeout as e:
+                        except Exception as e:
                             estimatedGas = 300000
-                            print "\nTimeout Error\n"
+                            print "\nTimeout Error?\n"
+                            print str(e)
                         #print str(estimatedGas) + " <--est gas, limit--> " + str(curGasLimit)
                         if estimatedGas >= curGasLimit:
                             estimatedGas = (curGasLimit/10)*8
@@ -230,5 +233,5 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print "Please call this program with 2 arguments"
         sys.exit(-1)
-    main(sys.argv[1], sys.argv[2], '800')
+    main(sys.argv[1], sys.argv[2], '1600')
     sys.exit(0)
